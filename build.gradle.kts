@@ -1,5 +1,4 @@
 // Top-level build file for CloudStream plugin project
-import com.lagradost.cloudstream3.gradle.CloudstreamExtension
 
 buildscript {
     repositories {
@@ -27,7 +26,8 @@ subprojects {
     apply(plugin = "kotlin-android")
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
-    configure<CloudstreamExtension> {
+    // Use the string name to avoid import issues in the root script
+    configure<com.lagradost.cloudstream3.gradle.CloudstreamExtension> {
         setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/Nikeleon/cloudstream-plugins")
     }
 
@@ -35,11 +35,15 @@ subprojects {
         val implementation by configurations
         implementation("com.github.recloudstream.cloudstream:library:master-SNAPSHOT")
         implementation(kotlin("stdlib"))
+        
+        // Essential dependencies for CloudStream providers
+        implementation("com.github.Blatzar:NiceHttp:0.4.11")
         implementation("org.jsoup:jsoup:1.17.2")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     }
 
     android {
-        namespace = "com.quyen"
+        namespace = "com.quyen.${project.name}"
         compileSdk = 34
 
         defaultConfig {
