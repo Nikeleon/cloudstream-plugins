@@ -1,11 +1,7 @@
 // ─────────────────────────────────────────────────────────────
 // Module build file for JavHDZProvider
-// The "cloudstream" block is read by the gradle plugin to:
-//   - populate manifest.json inside the .cs3 zip
-//   - name the output file JavHDZProvider.cs3
 // ─────────────────────────────────────────────────────────────
 
-// Version increments trigger update-notifications inside CloudStream
 version = 1
 
 cloudstream {
@@ -24,3 +20,4 @@ cloudstream {
 
     iconUrl = "https://javhdz.hot/favicon.ico"
 }
+
