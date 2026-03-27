@@ -1,10 +1,11 @@
 [
     {
-        "iconUrl": "https://javhdz.hot/favicon.ico",
+        "iconUrl": "https://gitlab.com/tearrs/movie/-/raw/main/icon/lock.ico",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Nikeleon/cloudstream-plugins",
-        "fileSize": 0,
+        "fileSize": 8870,
         "status": 1,
+		"language": "vi",
         "authors": [
             "quyen"
         ],
@@ -15,6 +16,6 @@
         "internalName": "JavHDZProvider",
         "description": "Xem phim JAV HD chất lượng cao trực tuyến",
         "url": "https://raw.githubusercontent.com/Nikeleon/cloudstream-plugins/main/JavHDZProvider.cs3",
-        "name": "JavHDZProvider"
+        "name": "JavHDZ"
     }
 ]
