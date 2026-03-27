@@ -1,0 +1,8 @@
+{
+    "name": "Quyen Repository",
+    "description": "Plugin repository by quyen — JavHDZ plugin for CloudStream",
+    "manifestVersion": 1,
+    "pluginLists": [
+        "https://vcec.vn/cloudstream/plugin.json"
+    ]
+}
