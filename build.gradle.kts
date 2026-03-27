@@ -1,5 +1,3 @@
-// Top-level build file for CloudStream plugin project
-
 buildscript {
     repositories {
         google()
@@ -44,7 +42,7 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     }
 
-    android {
+    configure<com.android.build.gradle.LibraryExtension> {
         namespace = "com.quyen.${project.name}"
         compileSdk = 34
 
@@ -56,7 +54,9 @@ subprojects {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
         }
-
+    }
+    
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
         }
@@ -66,5 +66,3 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }
-
-
