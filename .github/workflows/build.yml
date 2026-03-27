@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,11 +32,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: JavHDZProvider.cs3
-          path: JavHDZProvider/build/outputs/JavHDZProvider.cs3
+          path: JavHDZProvider/build/JavHDZProvider.cs3
 
       # Tự động copy .cs3 ra thư mục gốc repo để serve trực tiếp qua raw URL
       - name: Copy cs3 to root for direct hosting
-        run: cp JavHDZProvider/build/outputs/JavHDZProvider.cs3 JavHDZProvider.cs3
+        run: cp JavHDZProvider/build/JavHDZProvider.cs3 JavHDZProvider.cs3
 
       - name: Commit built .cs3 back to repo
         uses: stefanzweifel/git-auto-commit-action@v5

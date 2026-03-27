@@ -2,8 +2,7 @@ package com.quyen
 
 import android.util.Base64
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 import kotlinx.serialization.Serializable
 import org.jsoup.nodes.Element
 
@@ -13,13 +12,8 @@ class JavHDZProvider : MainAPI() {
     override val hasMainPage = true
     override var lang = "vi"
     override val hasDownloadSupport = true
-    override val supportedTypes = setOf(TvType.Movie)
+    override val supportedTypes = setOf(TvType.NSFW) // Standard for Jav
 
-    // ───────────────────────────────────────────────────────────
-    // Main page categories with pagination support
-    // CloudStream calls getMainPage(page=1,2,3,...) and appends
-    // the page number directly onto request.data
-    // ───────────────────────────────────────────────────────────
     override val mainPage = mainPageOf(
         "$mainUrl/video/page/"              to "Mới nhất",
         "$mainUrl/trending/page/"           to "Trending",
@@ -28,14 +22,6 @@ class JavHDZProvider : MainAPI() {
         "$mainUrl/category/beauty-4/page/"     to "Beauty & More",
     )
 
-    // ───────────────────────────────────────────────────────────
-    // Parse one movie card element → SearchResponse
-    // HTML pattern:
-    //   <a class="movie-item m-block" href="/slug-id.html" title="...">
-    //     <div class="m-block-img"><img src="..."/></div>
-    //     <div class="m-block-info"><h3 class="m-block-title">Title</h3></div>
-    //   </a>
-    // ───────────────────────────────────────────────────────────
     private fun Element.toSearchResult(): MovieSearchResponse? {
         val title = this.selectFirst("h3.m-block-title")?.text()?.trim()
             ?: this.attr("title").trim().takeIf { it.isNotEmpty() }
@@ -45,37 +31,24 @@ class JavHDZProvider : MainAPI() {
             this.selectFirst("img")?.attr("src")
                 ?: this.selectFirst("img")?.attr("data-src")
         )
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }
 
-    // ───────────────────────────────────────────────────────────
-    // Home page
-    // URL pattern: /video/page/1/, /trending/page/2/, etc.
-    // ───────────────────────────────────────────────────────────
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = "${request.data}$page/"
+        val url = if (page <= 1) request.data else "${request.data}$page/"
         val document = app.get(url).document
         val items = document.select("a.movie-item.m-block").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(request.name, items, hasNext = items.isNotEmpty())
     }
 
-    // ───────────────────────────────────────────────────────────
-    // Search
-    // URL pattern: /search/{query}/
-    // ───────────────────────────────────────────────────────────
     override suspend fun search(query: String): List<SearchResponse> {
         val encodedQuery = query.trim().replace(" ", "+")
         val document = app.get("$mainUrl/search/$encodedQuery/").document
         return document.select("a.movie-item.m-block").mapNotNull { it.toSearchResult() }
     }
 
-    // ───────────────────────────────────────────────────────────
-    // Load movie detail page
-    // URL pattern: /{slug}-{id}.html  →  id is the integer at end
-    // We store "$id|$serverCount" as loadLinks data
-    // ───────────────────────────────────────────────────────────
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
 
@@ -89,26 +62,18 @@ class JavHDZProvider : MainAPI() {
         val description = document.selectFirst("meta[property=og:description]")?.attr("content")
             ?: document.selectFirst(".movie-desc, .description, .entry-content p")?.text()
 
-        // Extract movie ID from URL: /some-movie-title-3831.html → 3831
         val movieId = Regex("""[/-](\d+)\.html$""").find(url)?.groupValues?.get(1)
             ?: return null
 
-        // Count server buttons; fallback to 4 if none found
         val serverCount = document.select(".server-item").size
             .takeIf { it > 0 } ?: 4
 
-        return newMovieLoadResponse(title, url, TvType.Movie, "$movieId|$serverCount") {
+        return newMovieLoadResponse(title, url, TvType.NSFW, "$movieId|$serverCount") {
             this.posterUrl = poster
             this.plot = description
         }
     }
 
-    // ───────────────────────────────────────────────────────────
-    // Load video links
-    // POST /ajax {"id": <movieId>, "server": <1..n>}
-    // Response JSON: { "player": "<script>...window.atob('BASE64')...</script>" }
-    // Decode base64 → actual video URL (.m3u8 or .mp4)
-    // ───────────────────────────────────────────────────────────
     @Serializable
     data class AjaxResponse(val player: String = "")
 
@@ -139,13 +104,12 @@ class JavHDZProvider : MainAPI() {
                 val playerHtml = response.parsedSafe<AjaxResponse>()?.player
                     ?: continue
 
-                // ── Attempt 1: window.atob("BASE64") ──────────────────
                 val base64Str = Regex("""window\.atob\(["']([A-Za-z0-9+/=]+)["']\)""")
                     .find(playerHtml)?.groupValues?.get(1)
 
                 val videoUrl = if (base64Str != null) {
                     try {
-                        String(Base64.decode(base64Str, Base64.DEFAULT)).trim()
+                        String(Base64.decode(base64Str, Base64.DEFAULT), Charsets.UTF_8).trim()
                     } catch (_: Exception) { null }
                 } else {
                     // ── Attempt 2: plain file URL in sources array ─────
@@ -157,22 +121,24 @@ class JavHDZProvider : MainAPI() {
 
                 val isM3u8 = videoUrl.contains(".m3u8", ignoreCase = true)
                 callback.invoke(
-                    ExtractorLink(
-                        source   = name,
-                        name     = "$name – Server $server",
-                        url      = videoUrl,
-                        referer  = mainUrl,
-                        quality  = Qualities.P1080.value,
-                        isM3u8   = isM3u8,
-                        headers  = mapOf("Referer" to mainUrl, "Origin" to mainUrl),
-                    )
+                    newExtractorLink(
+                        source = this.name,
+                        name   = "${this.name} - Server $server",
+                        url    = videoUrl,
+                        type   = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO,
+                    ) {
+                        this.quality  = Qualities.P1080.value
+                        this.referer  = mainUrl
+                        this.headers  = mapOf("Referer" to mainUrl, "Origin" to mainUrl)
+                    }
                 )
                 foundAny = true
             } catch (_: Exception) {
-                // try next server
+                // skip failed server
             }
         }
 
         return foundAny
     }
 }
+
