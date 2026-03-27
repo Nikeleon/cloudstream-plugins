@@ -3,6 +3,6 @@
     "description": "Plugin repository by quyen — JavHDZ plugin for CloudStream",
     "manifestVersion": 1,
     "pluginLists": [
-        "https://vcec.vn/cloudstream/plugin.json"
+        "https://raw.githubusercontent.com/Nikeleon/cloudstream-plugins/main/plugin.json"
     ]
 }

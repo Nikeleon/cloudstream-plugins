@@ -94,7 +94,7 @@ class JavHDZProvider : MainAPI() {
             ?: return null
 
         // Count server buttons; fallback to 4 if none found
-        val serverCount = document.select("div.server, [id^=server]").size
+        val serverCount = document.select(".server-item").size
             .takeIf { it > 0 } ?: 4
 
         return newMovieLoadResponse(title, url, TvType.Movie, "$movieId|$serverCount") {

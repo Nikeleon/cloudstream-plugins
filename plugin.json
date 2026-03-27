@@ -2,7 +2,7 @@
     {
         "iconUrl": "https://javhdz.hot/favicon.ico",
         "apiVersion": 1,
-        "repositoryUrl": "https://vcec.vn/cloudstream",
+        "repositoryUrl": "https://github.com/Nikeleon/cloudstream-plugins",
         "fileSize": 0,
         "status": 1,
         "authors": [
@@ -14,7 +14,7 @@
         "version": 1,
         "internalName": "JavHDZProvider",
         "description": "Xem phim JAV HD chất lượng cao trực tuyến",
-        "url": "https://vcec.vn/cloudstream/JavHDZProvider.cs3",
+        "url": "https://raw.githubusercontent.com/Nikeleon/cloudstream-plugins/main/JavHDZProvider.cs3",
         "name": "JavHDZProvider"
     }
 ]

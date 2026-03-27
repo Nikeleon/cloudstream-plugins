@@ -10,6 +10,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.2.2")
         classpath("com.github.recloudstream:gradle:master-SNAPSHOT")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.9.22")
     }
 }
 
@@ -24,6 +25,7 @@ allprojects {
 subprojects {
     apply(plugin = "com.android.library")
     apply(plugin = "kotlin-android")
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     // Use the string name to avoid import issues in the root script
@@ -64,4 +66,5 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }
+
 
